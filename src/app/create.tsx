@@ -21,6 +21,7 @@ export default function CreateCardScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [exifDate, setExifDate] = useState<string | undefined>(undefined);
   const [exifCoords, setExifCoords] = useState<Coordinates | undefined>(undefined);
+  const [imageHash, setImageHash] = useState<string | null>(null);
   
   const [name, setName] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
@@ -36,6 +37,7 @@ export default function CreateCardScreen() {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
       setImageUri(asset.uri);
+      setImageHash(asset.assetId || (asset.fileSize ? asset.fileSize.toString() : asset.fileName || null));
       
       if (asset.exif) {
         if (asset.exif.DateTimeOriginal) {
@@ -117,6 +119,7 @@ export default function CreateCardScreen() {
     try {
       await addCard({
         image_uri: imageUri,
+        image_hash: imageHash || undefined,
         nombre_plato: name.trim(),
         nombre_restaurante: restaurantName.trim(),
         categoria: category,
@@ -127,8 +130,11 @@ export default function CreateCardScreen() {
         coordenadas: saveLocation ? exifCoords : undefined, // Only save if toggle is ON
       });
 
-      // Check for duplicate image to prevent XP farming (only check URL)
-      const isDuplicateImage = cards.some(c => c.image_uri === imageUri);
+      // Check for duplicate image to prevent XP farming
+      const isDuplicateImage = cards.some(c => 
+        c.image_uri === imageUri || 
+        (imageHash && c.image_hash === imageHash)
+      );
 
       // Calculate XP
       let xpEarned = 30; // base XP

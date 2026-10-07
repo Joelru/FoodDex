@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useUserStats, getXpForLevel } from '../hooks/useUserStats';
@@ -56,75 +56,98 @@ export default function ProfileScreen() {
 
   const badges = getBadges();
 
+    // ... existing getBadges
+  const [selectedBadge, setSelectedBadge] = React.useState<any>(null);
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* Header Profile */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <MaterialCommunityIcons name="arrow-left" size={28} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Perfil del Entrenador</Text>
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.rankIconContainer}>
-          <MaterialCommunityIcons name={rank.icon as any} size={80} color="#FF6347" />
-        </View>
-        <Text style={styles.rankTitle}>{rank.title}</Text>
-        <Text style={styles.levelText}>Nivel {level}</Text>
-        
-        {/* Progress Bar */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.xpText}>{stats.xp} XP</Text>
-            <Text style={styles.xpTextNext}>{xpForNextLevel} XP</Text>
-          </View>
-          <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
-          </View>
-          <Text style={styles.xpSubtext}>Faltan {xpForNextLevel - stats.xp} XP para Nivel {level + 1}</Text>
+    <>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* Header Profile */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <MaterialCommunityIcons name="arrow-left" size={28} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Perfil del Entrenador</Text>
         </View>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{cards.length}</Text>
-            <Text style={styles.statLabel}>Registros</Text>
+        <View style={styles.card}>
+          <View style={styles.rankIconContainer}>
+            <MaterialCommunityIcons name={rank.icon as any} size={80} color="#FF6347" />
           </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{badges.length}</Text>
-            <Text style={styles.statLabel}>Medallas</Text>
+          <Text style={styles.rankTitle}>{rank.title}</Text>
+          <Text style={styles.levelText}>Nivel {level}</Text>
+          
+          {/* Progress Bar */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.xpText}>{stats.xp} XP</Text>
+              <Text style={styles.xpTextNext}>{xpForNextLevel} XP</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+            </View>
+            <Text style={styles.xpSubtext}>Faltan {xpForNextLevel - stats.xp} XP para Nivel {level + 1}</Text>
           </View>
-        </View>
-      </View>
 
-      <Text style={styles.sectionTitle}>Tus Medallas</Text>
-      {badges.length === 0 ? (
-        <View style={styles.emptyBadges}>
-          <MaterialCommunityIcons name="medal-outline" size={48} color="#ccc" />
-          <Text style={styles.emptyBadgesText}>Sigue registrando comidas para desbloquear medallas.</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>{cards.length}</Text>
+              <Text style={styles.statLabel}>Registros</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>{badges.length}</Text>
+              <Text style={styles.statLabel}>Medallas</Text>
+            </View>
+          </View>
         </View>
-      ) : (
-        <View style={styles.badgesGrid}>
-          {badges.map(badge => (
-            <TouchableOpacity 
-              key={badge.id} 
-              style={styles.badgeItem}
-              onPress={() => {
-                import('react-native').then(({ Alert }) => {
-                  Alert.alert(badge.name, badge.desc);
-                });
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.badgeIconWrapper, { backgroundColor: badge.color }]}>
-                <MaterialCommunityIcons name={badge.icon as any} size={32} color="#fff" />
+
+        <Text style={styles.sectionTitle}>Tus Medallas</Text>
+        {badges.length === 0 ? (
+          <View style={styles.emptyBadges}>
+            <MaterialCommunityIcons name="medal-outline" size={48} color="#ccc" />
+            <Text style={styles.emptyBadgesText}>Sigue registrando comidas para desbloquear medallas.</Text>
+          </View>
+        ) : (
+          <View style={styles.badgesGrid}>
+            {badges.map(badge => (
+              <TouchableOpacity 
+                key={badge.id} 
+                style={styles.badgeItem}
+                onPress={() => setSelectedBadge(badge)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.badgeIconWrapper, { backgroundColor: badge.color }]}>
+                  <MaterialCommunityIcons name={badge.icon as any} size={32} color="#fff" />
+                </View>
+                <Text style={styles.badgeName}>{badge.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Retro Badge Modal */}
+      <Modal visible={!!selectedBadge} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          {selectedBadge && (
+            <View style={styles.modalCard}>
+              <View style={[styles.modalIconWrapper, { backgroundColor: selectedBadge.color, width: 80, height: 80, borderRadius: 40 }]}>
+                <MaterialCommunityIcons name={selectedBadge.icon as any} size={48} color="#fff" />
               </View>
-              <Text style={styles.badgeName}>{badge.name}</Text>
-            </TouchableOpacity>
-          ))}
+              <Text style={styles.modalTitle}>{selectedBadge.name}</Text>
+              <Text style={styles.modalText}>{selectedBadge.desc}</Text>
+              
+              <TouchableOpacity 
+                style={styles.modalBtn} 
+                onPress={() => setSelectedBadge(null)}
+              >
+                <Text style={styles.modalBtnText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-      )}
-    </ScrollView>
+      </Modal>
+    </>
   );
 }
 
@@ -291,5 +314,59 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    width: '80%',
+    padding: 24,
+    borderRadius: 20,
+    borderWidth: 4,
+    borderColor: '#333',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 32,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  modalIconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#333',
+  },
+  modalText: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 22,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  modalBtn: {
+    backgroundColor: '#333',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    marginTop: 24,
+  },
+  modalBtnText: {
+    fontFamily: 'VT323_400Regular',
+    color: '#fff',
+    fontSize: 24,
+    textTransform: 'uppercase',
   },
 });

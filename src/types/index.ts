@@ -8,6 +8,7 @@ export interface Coordinates {
 export interface FoodCard {
   id: string;
   image_uri: string;
+  image_hash?: string;
   nombre_plato?: string;
   nombre_restaurante?: string;
   categoria: CategoryId;
