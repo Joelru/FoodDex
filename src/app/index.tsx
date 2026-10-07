@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFoodCards } from '../hooks/useFoodCards';
 import { useUserStats, getXpForLevel } from '../hooks/useUserStats';
 import FoodCardItem from '../components/FoodCardItem';
+import Tutorial from '../components/Tutorial';
 import { CATEGORIES } from '../constants/Categories';
 import { CategoryId } from '../types';
 
@@ -135,6 +136,9 @@ export default function GalleryScreen() {
       >
         <MaterialCommunityIcons name="plus-thick" size={36} color="#333" />
       </TouchableOpacity>
+
+      {/* Tutorial Overlay */}
+      <Tutorial />
     </View>
   );
 }
