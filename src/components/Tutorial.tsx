@@ -73,7 +73,7 @@ export default function Tutorial() {
         <View style={styles.bubbleContainer}>
           <Text style={styles.bubbleText}>{step.text}</Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleNext}>
-            <MaterialCommunityIcons name="close-thick" size={20} color="#333" />
+            <Text style={styles.pixelIconText}>X</Text>
           </TouchableOpacity>
           {/* Bubble Tail */}
           <View style={styles.bubbleTail} />
@@ -123,8 +123,9 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     borderRadius: 8,
     width: '100%',
-    marginBottom: 20,
+    marginBottom: -15, // Overlap the avatar slightly
     position: 'relative',
+    zIndex: 2, // Ensure bubble is above or below? Let's keep bubble below the avatar if we want the avatar to overlap, or bubble above. Let's make bubble zIndex 2 and avatar zIndex 1. Or bubble zIndex 1 and avatar zIndex 2.
     // Pixelated shadow effect
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },
@@ -156,6 +157,12 @@ const styles = StyleSheet.create({
     shadowRadius: 0,
     elevation: 4,
   },
+  pixelIconText: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 24,
+    color: '#333',
+    marginTop: -2,
+  },
   bubbleTail: {
     position: 'absolute',
     bottom: -15,
@@ -177,6 +184,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignSelf: 'flex-end',
     marginRight: 20,
+    zIndex: 3,
   },
   avatarImage: {
     width: CELL_SIZE * 3,

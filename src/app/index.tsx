@@ -71,8 +71,14 @@ export default function GalleryScreen() {
             style={[styles.filterPill, activeFilter === 'todas' && styles.filterPillActive]}
             onPress={() => setActiveFilter('todas')}
           >
+            <MaterialCommunityIcons 
+              name="cards-playing-outline" 
+              size={16} 
+              color={activeFilter === 'todas' ? '#fff' : '#555'} 
+              style={styles.filterIcon}
+            />
             <Text style={[styles.filterText, activeFilter === 'todas' && styles.filterTextActive]}>
-              🃏 Todas
+              Todas
             </Text>
           </TouchableOpacity>
           

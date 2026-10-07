@@ -65,7 +65,7 @@ export default function ProfileScreen() {
         {/* Header Profile */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <MaterialCommunityIcons name="arrow-left" size={28} color="#333" />
+            <Text style={styles.pixelBackIcon}>{'<'}</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Perfil del Entrenador</Text>
         </View>
@@ -165,6 +165,12 @@ const styles = StyleSheet.create({
   backBtn: {
     marginRight: 16,
     padding: 4,
+  },
+  pixelBackIcon: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 32,
+    color: '#333',
+    marginTop: -4,
   },
   title: {
     fontFamily: 'VT323_400Regular',

@@ -56,7 +56,7 @@ function ViewerItem({ item, editCard, removeCard, goBack }: { item: any, editCar
 
       {/* Delete Button */}
       <TouchableOpacity style={styles.deleteButton} onPress={confirmDelete}>
-        <MaterialCommunityIcons name="trash-can" size={26} color="#FF6347" />
+        <Text style={styles.pixelTrashIcon}>🗑</Text>
       </TouchableOpacity>
 
       <View style={styles.overlay}>
@@ -186,7 +186,7 @@ export default function ViewerScreen() {
       />
 
       <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-        <MaterialCommunityIcons name="close" size={30} color="#fff" />
+        <Text style={styles.pixelCloseIcon}>X</Text>
       </TouchableOpacity>
     </View>
   );
@@ -224,6 +224,14 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  pixelCloseIcon: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 28,
+    color: '#fff',
+    marginTop: -4,
   },
   deleteButton: {
     position: 'absolute',
@@ -235,6 +243,14 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FF6347',
+  },
+  pixelTrashIcon: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 24,
+    color: '#FF6347',
+    marginTop: -2,
   },
   overlay: {
     position: 'absolute',
