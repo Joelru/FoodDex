@@ -160,14 +160,6 @@ export default function ViewerScreen() {
 
   const initialIndex = parseInt(index || '0', 10);
 
-  useEffect(() => {
-    if (flatListRef.current && filteredCards.length > 0) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToIndex({ index: initialIndex, animated: false });
-      }, 100);
-    }
-  }, [initialIndex, filteredCards.length]);
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -185,6 +177,7 @@ export default function ViewerScreen() {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        initialScrollIndex={initialIndex}
         getItemLayout={(data, index) => ({
           length: width,
           offset: width * index,
