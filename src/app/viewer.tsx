@@ -153,6 +153,7 @@ export default function ViewerScreen() {
   const { index, filter } = useLocalSearchParams<{ index: string; filter: string }>();
   const { cards, editCard, removeCard } = useFoodCards();
   const flatListRef = useRef<FlatList>(null);
+  const [isReady, setIsReady] = useState(false);
 
   const filteredCards = cards.filter(card => 
     !filter || filter === 'todas' ? true : card.categoria === filter
@@ -160,30 +161,54 @@ export default function ViewerScreen() {
 
   const initialIndex = parseInt(index || '0', 10);
 
+  useEffect(() => {
+    if (flatListRef.current && filteredCards.length > 0) {
+      // Using a small timeout ensures the FlatList has calculated its layout
+      setTimeout(() => {
+        try {
+          flatListRef.current?.scrollToIndex({ index: initialIndex, animated: false });
+        } catch (e) {
+          console.warn('Scroll to index failed:', e);
+        } finally {
+          setIsReady(true);
+        }
+      }, 50);
+    } else if (filteredCards.length === 0) {
+      setIsReady(true);
+    }
+  }, [initialIndex, filteredCards.length]);
+
   return (
     <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={filteredCards}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ViewerItem 
-            item={item} 
-            editCard={editCard} 
-            removeCard={removeCard} 
-            goBack={() => router.back()} 
-          />
-        )}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        initialScrollIndex={initialIndex}
-        getItemLayout={(data, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
-      />
+      <View style={{ flex: 1, opacity: isReady ? 1 : 0 }}>
+        <FlatList
+          ref={flatListRef}
+          data={filteredCards}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ViewerItem 
+              item={item} 
+              editCard={editCard} 
+              removeCard={removeCard} 
+              goBack={() => router.back()} 
+            />
+          )}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          getItemLayout={(data, index) => ({
+            length: width,
+            offset: width * index,
+            index,
+          })}
+          onScrollToIndexFailed={(info) => {
+            const wait = new Promise(resolve => setTimeout(resolve, 100));
+            wait.then(() => {
+              flatListRef.current?.scrollToIndex({ index: info.index, animated: false });
+            });
+          }}
+        />
+      </View>
 
       <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
         <Text style={styles.pixelCloseIcon}>X</Text>
