@@ -127,15 +127,12 @@ export default function CreateCardScreen() {
         coordenadas: saveLocation ? exifCoords : undefined, // Only save if toggle is ON
       });
 
-      // Check for duplicate image to prevent XP farming
-      const isDuplicateImage = cards.some(c => 
-        c.image_uri === imageUri || 
-        (exifDate && c.fecha_captura === exifDate)
-      );
+      // Check for duplicate image to prevent XP farming (only check URL)
+      const isDuplicateImage = cards.some(c => c.image_uri === imageUri);
 
       // Calculate XP
-      let xpEarned = 50; // base XP
-      if (imageUri && !isDuplicateImage) xpEarned += 20;
+      let xpEarned = 30; // base XP
+      if (imageUri && !isDuplicateImage) xpEarned += 40;
       if (saveLocation && exifCoords) xpEarned += 15;
       if (rating > 0 && price > 0) xpEarned += 15;
 
@@ -167,7 +164,7 @@ export default function CreateCardScreen() {
             ) : (
               <View style={styles.imagePlaceholder}>
                 <MaterialCommunityIcons name="camera-plus" size={60} color="#6c757d" />
-                <Text style={styles.placeholderText}>Toma una foto (+20 XP)</Text>
+                <Text style={styles.placeholderText}>Toma una foto (+40 XP)</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -196,7 +193,7 @@ export default function CreateCardScreen() {
           />
 
           {/* Restaurante & Ubicación */}
-          <Text style={styles.label}>Restaurante / Lugar (+50 XP Base)</Text>
+          <Text style={styles.label}>Restaurante / Lugar (+30 XP Base)</Text>
           <View style={styles.locationRow}>
             <TextInput
               style={[styles.input, {flex: 1, marginBottom: 0}]}

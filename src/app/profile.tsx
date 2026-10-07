@@ -19,36 +19,36 @@ export default function ProfileScreen() {
     
     // Category badges (Requires 5 in category)
     if (cards.filter(c => c.categoria === 'chatarra').length >= 5) {
-      badges.push({ id: 'chatarra', name: 'Maestro Chatarra', icon: CATEGORIES.chatarra.iconName, color: CATEGORIES.chatarra.color });
+      badges.push({ id: 'chatarra', name: 'Maestro Chatarra', desc: 'Has registrado 5 platillos de comida chatarra.', icon: CATEGORIES.chatarra.iconName, color: CATEGORIES.chatarra.color });
     }
     if (cards.filter(c => c.categoria === 'saludable').length >= 5) {
-      badges.push({ id: 'saludable', name: 'Alma Saludable', icon: CATEGORIES.saludable.iconName, color: CATEGORIES.saludable.color });
+      badges.push({ id: 'saludable', name: 'Alma Saludable', desc: 'Has registrado 5 platillos saludables.', icon: CATEGORIES.saludable.iconName, color: CATEGORIES.saludable.color });
     }
     if (cards.filter(c => c.categoria === 'dulce').length >= 5) {
-      badges.push({ id: 'dulce', name: 'Rey del Azúcar', icon: CATEGORIES.dulce.iconName, color: CATEGORIES.dulce.color });
+      badges.push({ id: 'dulce', name: 'Rey del Azúcar', desc: 'Has registrado 5 postres o dulces.', icon: CATEGORIES.dulce.iconName, color: CATEGORIES.dulce.color });
     }
     if (cards.filter(c => c.categoria === 'platos_finos').length >= 5) {
-      badges.push({ id: 'finos', name: 'Paladar Fino', icon: CATEGORIES.platos_finos.iconName, color: CATEGORIES.platos_finos.color });
+      badges.push({ id: 'finos', name: 'Paladar Fino', desc: 'Has registrado 5 platos finos.', icon: CATEGORIES.platos_finos.iconName, color: CATEGORIES.platos_finos.color });
     }
     if (cards.filter(c => c.categoria === 'casero').length >= 5) {
-      badges.push({ id: 'casero', name: 'Sazón de Hogar', icon: CATEGORIES.casero.iconName, color: CATEGORIES.casero.color });
+      badges.push({ id: 'casero', name: 'Sazón de Hogar', desc: 'Has registrado 5 comidas caseras.', icon: CATEGORIES.casero.iconName, color: CATEGORIES.casero.color });
     }
     if (cards.filter(c => c.categoria === 'bebidas').length >= 5) {
-      badges.push({ id: 'bebidas', name: 'Catador de Bebidas', icon: CATEGORIES.bebidas.iconName, color: CATEGORIES.bebidas.color });
+      badges.push({ id: 'bebidas', name: 'Catador de Bebidas', desc: 'Has registrado 5 bebidas diferentes.', icon: CATEGORIES.bebidas.iconName, color: CATEGORIES.bebidas.color });
     }
     
     // Milestone badges
     if (cards.length >= 1) {
-      badges.push({ id: 'primera', name: 'Primer Bocado', icon: 'star', color: '#FFC107' });
+      badges.push({ id: 'primera', name: 'Primer Bocado', desc: 'Otorgada por guardar tu primera comida en la FoodDex.', icon: 'star', color: '#FFC107' });
     }
     if (cards.length >= 10) {
-      badges.push({ id: 'coleccionista', name: 'Coleccionista', icon: 'cards-playing-outline', color: '#607D8B' });
+      badges.push({ id: 'coleccionista', name: 'Coleccionista', desc: 'Has alcanzado los 10 registros en tu FoodDex.', icon: 'cards-playing-outline', color: '#607D8B' });
     }
     if (cards.filter(c => !c.volveria_a_comer_aqui).length >= 5) {
-      badges.push({ id: 'sobreviviente', name: 'Sobreviviente', icon: 'skull-outline', color: '#9E9E9E' });
+      badges.push({ id: 'sobreviviente', name: 'Sobreviviente', desc: 'Has registrado 5 comidas que no volverías a probar jamás.', icon: 'skull-outline', color: '#9E9E9E' });
     }
     if (cards.filter(c => c.coordenadas).length >= 5) {
-      badges.push({ id: 'trotamundos', name: 'Trotamundos', icon: 'earth', color: '#4CAF50' });
+      badges.push({ id: 'trotamundos', name: 'Trotamundos', desc: 'Has guardado la ubicación de 5 comidas diferentes.', icon: 'earth', color: '#4CAF50' });
     }
 
     return badges;
@@ -106,12 +106,21 @@ export default function ProfileScreen() {
       ) : (
         <View style={styles.badgesGrid}>
           {badges.map(badge => (
-            <View key={badge.id} style={styles.badgeItem}>
+            <TouchableOpacity 
+              key={badge.id} 
+              style={styles.badgeItem}
+              onPress={() => {
+                import('react-native').then(({ Alert }) => {
+                  Alert.alert(badge.name, badge.desc);
+                });
+              }}
+              activeOpacity={0.7}
+            >
               <View style={[styles.badgeIconWrapper, { backgroundColor: badge.color }]}>
                 <MaterialCommunityIcons name={badge.icon as any} size={32} color="#fff" />
               </View>
               <Text style={styles.badgeName}>{badge.name}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       )}

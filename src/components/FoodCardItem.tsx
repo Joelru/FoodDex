@@ -74,22 +74,32 @@ export default function FoodCardItem({ card, index, onPress }: Props) {
           </View>
 
           <View style={styles.statsContainer}>
-            <View style={styles.statBox}>
-              <MaterialCommunityIcons name="star" size={12} color="#FFD700" style={styles.starIcon}/>
-              <Text style={styles.statValue}>{card.calificacion > 0 ? card.calificacion : '?'}</Text>
+            <View style={styles.statRow}>
+              <View style={styles.statMiniBox}>
+                <MaterialCommunityIcons name="star" size={12} color="#FFD700" />
+                <Text style={styles.statValue}>{card.calificacion > 0 ? card.calificacion : '?'}</Text>
+              </View>
+              
+              <View style={styles.statMiniBox}>
+                {card.precio > 0 ? Array(card.precio).fill(0).map((_, i) => (
+                  <MaterialCommunityIcons key={i} name="currency-usd" size={12} color="#4CAF50" />
+                )) : <Text style={[styles.statValue, {color: '#999'}]}>?</Text>}
+              </View>
+
+              <View style={styles.statMiniBox}>
+                <MaterialCommunityIcons 
+                  name={card.volveria_a_comer_aqui ? 'heart' : 'heart-broken'} 
+                  size={12} 
+                  color={card.volveria_a_comer_aqui ? '#E91E63' : '#9E9E9E'} 
+                />
+              </View>
             </View>
             
-            <View style={styles.statRow}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                {card.precio > 0 ? Array(card.precio).fill(0).map((_, i) => (
-                  <MaterialCommunityIcons key={i} name="currency-usd" size={10} color="#4CAF50" />
-                )) : <Text style={[styles.statValue, {fontSize: 10, color: '#999'}]}>?</Text>}
-              </View>
-              <MaterialCommunityIcons 
-                name={card.volveria_a_comer_aqui ? 'heart' : 'heart-broken'} 
-                size={12} 
-                color={card.volveria_a_comer_aqui ? '#E91E63' : '#9E9E9E'} 
-              />
+            <View style={styles.restaurantRow}>
+              <MaterialCommunityIcons name="storefront-outline" size={12} color="#555" />
+              <Text style={styles.restaurantText} numberOfLines={1}>
+                {card.nombre_restaurante || 'Desconocido'}
+              </Text>
             </View>
           </View>
         </View>
@@ -191,26 +201,37 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#333',
   },
-  statBox: {
+  statRow: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    justifyContent: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#eee',
     paddingBottom: 2,
     marginBottom: 2,
   },
-  starIcon: {
-    marginRight: 2,
+  statMiniBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statValue: {
     fontFamily: 'VT323_400Regular',
     fontSize: 14,
     color: '#333',
+    marginLeft: 2,
   },
-  statRow: {
+  restaurantRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restaurantText: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 12,
+    color: '#555',
+    marginLeft: 4,
+    flex: 1,
+    textAlign: 'center',
   },
 });
