@@ -34,6 +34,7 @@ export default function Layout() {
           options={({ navigation }) => ({ 
             title: 'Nueva Captura',
             presentation: 'modal',
+            animation: 'fade',
             headerTitleStyle: { fontFamily: 'VT323_400Regular', fontSize: 24 },
             headerLeft: () => (
               <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: 8, padding: 8 }}>

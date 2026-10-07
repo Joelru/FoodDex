@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useCallback, useState, useRef } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ScrollView, Animated, Dimensions } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFoodCards } from '../hooks/useFoodCards';
@@ -9,18 +9,33 @@ import Tutorial from '../components/Tutorial';
 import { CATEGORIES } from '../constants/Categories';
 import { CategoryId } from '../types';
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export default function GalleryScreen() {
   const router = useRouter();
   const { cards, isLoading, reloadCards } = useFoodCards();
   const { stats, level, loadStats } = useUserStats();
   const [activeFilter, setActiveFilter] = useState<CategoryId | 'todas'>('todas');
+  const revealAnim = useRef(new Animated.Value(0)).current;
 
   useFocusEffect(
     useCallback(() => {
       reloadCards();
       loadStats();
+      // Reset animation when coming back
+      revealAnim.setValue(0);
     }, [reloadCards, loadStats])
   );
+
+  const handleFabPress = () => {
+    Animated.timing(revealAnim, {
+      toValue: 1,
+      duration: 350,
+      useNativeDriver: true,
+    }).start(() => {
+      router.push('/create');
+    });
+  };
 
   const filteredCards = cards.filter(card => 
     activeFilter === 'todas' ? true : card.categoria === activeFilter
@@ -134,10 +149,32 @@ export default function GalleryScreen() {
         />
       )}
 
+      {/* Animated Circular Reveal */}
+      <Animated.View 
+        style={[
+          styles.revealCircle, 
+          { 
+            transform: [
+              { 
+                scale: revealAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 50] // Max scale to fill screen
+                }) 
+              }
+            ],
+            opacity: revealAnim.interpolate({
+              inputRange: [0, 0.1, 1],
+              outputRange: [0, 1, 1] // Ensure it's invisible at 0
+            })
+          }
+        ]} 
+        pointerEvents="none" 
+      />
+
       {/* Botón Flotante */}
       <TouchableOpacity 
         style={styles.fab} 
-        onPress={() => router.push('/create')}
+        onPress={handleFabPress}
         activeOpacity={0.7}
       >
         <MaterialCommunityIcons name="plus-thick" size={36} color="#333" />
@@ -283,7 +320,7 @@ const styles = StyleSheet.create({
     right: 24,
     width: 64,
     height: 64,
-    backgroundColor: '#FF6347', // Changed from Yellow to Tomato Red
+    backgroundColor: '#FF6347', // Tomato Red
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
@@ -294,5 +331,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 0,
     elevation: 8,
+  },
+  revealCircle: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 64,
+    height: 64,
+    backgroundColor: '#FF6347',
+    borderRadius: 32,
+    zIndex: 99, // Needs to cover the screen but be under the FAB
   },
 });
