@@ -1,98 +1,217 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useCallback, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFoodCards } from '../hooks/useFoodCards';
+import FoodCardItem from '../components/FoodCardItem';
+import { CATEGORIES } from '../constants/Categories';
+import { CategoryId } from '../types';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function GalleryScreen() {
+  const router = useRouter();
+  const { cards, isLoading, reloadCards } = useFoodCards();
+  const [activeFilter, setActiveFilter] = useState<CategoryId | 'todas'>('todas');
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
+  useFocusEffect(
+    useCallback(() => {
+      reloadCards();
+    }, [reloadCards])
+  );
+
+  const filteredCards = cards.filter(card => 
+    activeFilter === 'todas' ? true : card.categoria === activeFilter
+  );
+
+  const openViewer = (initialIndex: number) => {
+    // Navigate to viewer and pass the index and filter so it knows the order
+    router.push({
+      pathname: '/viewer',
+      params: { index: initialIndex, filter: activeFilter }
+    });
+  };
+
+  if (isLoading && cards.length === 0) {
     return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
+      <View style={styles.centerContainer}>
+        <Text style={styles.loadingText}>Barajando cartas...</Text>
+      </View>
     );
   }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.container}>
+      {/* Filtros */}
+      <View style={styles.filterContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+          <TouchableOpacity 
+            style={[styles.filterPill, activeFilter === 'todas' && styles.filterPillActive]}
+            onPress={() => setActiveFilter('todas')}
+          >
+            <Text style={[styles.filterText, activeFilter === 'todas' && styles.filterTextActive]}>
+              🃏 Todas
+            </Text>
+          </TouchableOpacity>
+          
+          {Object.values(CATEGORIES).map(cat => (
+            <TouchableOpacity 
+              key={cat.id}
+              style={[
+                styles.filterPill, 
+                activeFilter === cat.id && [styles.filterPillActive, { backgroundColor: cat.color }]
+              ]}
+              onPress={() => setActiveFilter(cat.id)}
+            >
+              <MaterialCommunityIcons 
+                name={cat.iconName as any} 
+                size={16} 
+                color={activeFilter === cat.id ? '#fff' : '#555'} 
+                style={styles.filterIcon}
+              />
+              <Text style={[styles.filterText, activeFilter === cat.id && styles.filterTextActive]}>
+                {cat.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      {/* Grid de Cartas */}
+      {filteredCards.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <MaterialCommunityIcons name="cards-playing" size={80} color="#333" />
+          <Text style={styles.emptyTitle}>Mazo Vacío</Text>
+          <Text style={styles.emptySub}>
+            {activeFilter === 'todas' 
+              ? 'No tienes cartas aún. ¡Atrapa tu primera comida!' 
+              : 'No tienes platillos de este elemento.'}
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredCards}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => (
+            <FoodCardItem 
+              card={item} 
+              index={index} 
+              onPress={() => openViewer(index)} 
+            />
+          )}
+          numColumns={3}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          columnWrapperStyle={styles.row} 
+        />
+      )}
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      {/* Botón Flotante */}
+      <TouchableOpacity 
+        style={styles.fab} 
+        onPress={() => router.push('/create')}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons name="plus-thick" size={36} color="#333" />
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F0EAD6',
+  },
+  centerContainer: {
+    flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0EAD6',
+  },
+  loadingText: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 24,
+    color: '#333',
+  },
+  filterContainer: {
+    paddingVertical: 12,
+    backgroundColor: 'transparent',
+  },
+  filterScroll: {
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  filterPill: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 0,
+    elevation: 3,
   },
-  safeArea: {
+  filterPillActive: {
+    backgroundColor: '#333',
+  },
+  filterIcon: {
+    marginRight: 4,
+  },
+  filterText: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 18,
+    color: '#555',
+    marginTop: 2,
+  },
+  filterTextActive: {
+    color: '#fff',
+  },
+  row: {
+    justifyContent: 'flex-start',
+  },
+  listContainer: {
+    padding: 8,
+    paddingBottom: 100,
+  },
+  emptyContainer: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+    alignItems: 'center',
+    padding: 20,
   },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
+  emptyTitle: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 36,
+    color: '#333',
+    marginBottom: 8,
     textTransform: 'uppercase',
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  emptySub: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 20,
+    color: '#666',
+    textAlign: 'center',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 64,
+    height: 64,
+    backgroundColor: '#FF6347', // Changed from Yellow to Tomato Red
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 8,
   },
 });
