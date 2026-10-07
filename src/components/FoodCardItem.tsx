@@ -52,7 +52,12 @@ export default function FoodCardItem({ card, index, onPress }: Props) {
       >
         <View style={styles.innerBorder}>
           <View style={styles.cardHeader}>
-            <Text style={styles.title} numberOfLines={1}>
+            <Text 
+              style={styles.title} 
+              numberOfLines={1} 
+              adjustsFontSizeToFit 
+              minimumFontScale={0.4}
+            >
               {card.nombre_plato || '???'}
             </Text>
             <View style={styles.iconCircle}>
@@ -97,7 +102,12 @@ export default function FoodCardItem({ card, index, onPress }: Props) {
             
             <View style={styles.restaurantRow}>
               <MaterialCommunityIcons name="storefront-outline" size={12} color="#555" />
-              <Text style={styles.restaurantText} numberOfLines={1}>
+              <Text 
+                style={styles.restaurantText} 
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.5}
+              >
                 {card.nombre_restaurante || 'Desconocido'}
               </Text>
             </View>

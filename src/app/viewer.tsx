@@ -77,7 +77,14 @@ function ViewerItem({ item, editCard, removeCard, goBack }: { item: any, editCar
               />
             ) : (
               <TouchableOpacity style={styles.titleContainer} onPress={() => setIsEditing(true)}>
-                <Text style={styles.title} numberOfLines={1}>{item.nombre_plato || 'Platillo Misterioso'}</Text>
+                <Text 
+                  style={styles.title} 
+                  adjustsFontSizeToFit 
+                  numberOfLines={2}
+                  minimumFontScale={0.5}
+                >
+                  {item.nombre_plato || 'Platillo Misterioso'}
+                </Text>
                 <MaterialCommunityIcons name="pencil" size={16} color="#999" style={styles.editIcon} />
               </TouchableOpacity>
             )}
