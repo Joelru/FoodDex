@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, Switch, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Switch, StyleSheet, Alert, ActivityIndicator, Platform, Modal, ScrollView } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFoodCards } from '../hooks/useFoodCards';
+import { useUserStats } from '../hooks/useUserStats';
 import { CATEGORIES } from '../constants/Categories';
 import { CategoryId, Coordinates } from '../types';
 
 export default function CreateCardScreen() {
   const router = useRouter();
   const { addCard } = useFoodCards();
+  const { addXp, level } = useUserStats();
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalData, setModalData] = useState({ earnedXp: 0, leveledUp: false, newLevel: 0 });
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [exifDate, setExifDate] = useState<string | undefined>(undefined);
@@ -121,7 +126,18 @@ export default function CreateCardScreen() {
         fecha_captura: exifDate || new Date().toISOString(),
         coordenadas: saveLocation ? exifCoords : undefined, // Only save if toggle is ON
       });
-      router.back();
+
+      // Calculate XP
+      let xpEarned = 50; // base XP
+      if (imageUri) xpEarned += 20;
+      if (saveLocation && exifCoords) xpEarned += 15;
+      if (rating > 0 && price > 0) xpEarned += 15;
+
+      const leveledUp = await addXp(xpEarned);
+      
+      setModalData({ earnedXp: xpEarned, leveledUp, newLevel: level + (leveledUp ? 1 : 0) });
+      setShowSuccessModal(true);
+      
     } catch (error) {
       Alert.alert("Error", "Hubo un error al guardar la tarjeta.");
     }
@@ -145,7 +161,7 @@ export default function CreateCardScreen() {
             ) : (
               <View style={styles.imagePlaceholder}>
                 <MaterialCommunityIcons name="camera-plus" size={60} color="#6c757d" />
-                <Text style={styles.placeholderText}>Toca para tomar foto</Text>
+                <Text style={styles.placeholderText}>Toma una foto (+20 XP)</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -174,7 +190,7 @@ export default function CreateCardScreen() {
           />
 
           {/* Restaurante & Ubicación */}
-          <Text style={styles.label}>Restaurante / Lugar</Text>
+          <Text style={styles.label}>Restaurante / Lugar (+50 XP Base)</Text>
           <View style={styles.locationRow}>
             <TextInput
               style={[styles.input, {flex: 1, marginBottom: 0}]}
@@ -206,7 +222,7 @@ export default function CreateCardScreen() {
               trackColor={{ false: '#767577', true: '#4CAF50' }}
               thumbColor={saveLocation ? '#fff' : '#f4f3f4'}
             />
-            <Text style={styles.switchTextMini}>Guardar coordenadas en la tarjeta</Text>
+            <Text style={styles.switchTextMini}>Guardar coordenadas (+15 XP)</Text>
           </View>
 
           {/* Categoría */}
@@ -233,7 +249,7 @@ export default function CreateCardScreen() {
           </ScrollView>
 
           {/* Calificación */}
-          <Text style={styles.label}>Calificación: {rating}/10 ⭐</Text>
+          <Text style={styles.label}>Calificación: {rating}/10 ⭐ (+15 XP con precio)</Text>
           <View style={styles.ratingRow}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
               <TouchableOpacity
@@ -290,6 +306,40 @@ export default function CreateCardScreen() {
           
           <View style={styles.bottomSpacer} />
         </View>
+
+        <Modal visible={showSuccessModal} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={[styles.modalIconWrapper, { backgroundColor: modalData.leveledUp ? '#FFD700' : '#4CAF50' }]}>
+                <MaterialCommunityIcons 
+                  name={modalData.leveledUp ? 'star-shooting' : 'check-decagram'} 
+                  size={48} 
+                  color="#fff" 
+                />
+              </View>
+              <Text style={styles.modalTitle}>
+                {modalData.leveledUp ? '¡Nivel Subido!' : '¡Registro Exitoso!'}
+              </Text>
+              <Text style={styles.modalText}>
+                Has ganado <Text style={{color: '#FF6347'}}>{modalData.earnedXp} XP</Text>.
+              </Text>
+              {modalData.leveledUp && (
+                <Text style={styles.modalSubText}>¡Alcanzaste el Nivel {modalData.newLevel}!</Text>
+              )}
+              
+              <TouchableOpacity 
+                style={styles.modalBtn} 
+                onPress={() => {
+                  setShowSuccessModal(false);
+                  router.back();
+                }}
+              >
+                <Text style={styles.modalBtnText}>Continuar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
     </KeyboardAwareScrollView>
   );
 }
@@ -427,14 +477,14 @@ const styles = StyleSheet.create({
   },
   ratingRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
   numberCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -503,5 +553,68 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 140,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    width: '80%',
+    padding: 24,
+    borderRadius: 20,
+    borderWidth: 4,
+    borderColor: '#333',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalIconWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 3,
+    borderColor: '#333',
+  },
+  modalTitle: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 32,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalText: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 24,
+    color: '#666',
+    textAlign: 'center',
+  },
+  modalSubText: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 22,
+    color: '#4CAF50',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  modalBtn: {
+    backgroundColor: '#333',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    marginTop: 24,
+  },
+  modalBtnText: {
+    fontFamily: 'VT323_400Regular',
+    color: '#fff',
+    fontSize: 24,
+    textTransform: 'uppercase',
   },
 });

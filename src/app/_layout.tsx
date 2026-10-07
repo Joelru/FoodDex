@@ -26,10 +26,7 @@ export default function Layout() {
         <Stack.Screen 
           name="index" 
           options={{ 
-            title: 'Mi FoodDex',
-            headerLargeTitle: true,
-            headerStyle: { backgroundColor: '#F0EAD6' },
-            headerTitleStyle: { fontFamily: 'VT323_400Regular', fontSize: 28 }
+            headerShown: false 
           }} 
         />
         <Stack.Screen 
@@ -45,6 +42,12 @@ export default function Layout() {
           options={{ 
             headerShown: false,
             presentation: 'fullScreenModal'
+          }} 
+        />
+        <Stack.Screen 
+          name="profile" 
+          options={{ 
+            headerShown: false 
           }} 
         />
       </Stack>

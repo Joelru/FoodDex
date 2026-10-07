@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, ScrollView } from '
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFoodCards } from '../hooks/useFoodCards';
+import { useUserStats, getXpForLevel } from '../hooks/useUserStats';
 import FoodCardItem from '../components/FoodCardItem';
 import { CATEGORIES } from '../constants/Categories';
 import { CategoryId } from '../types';
@@ -10,6 +11,7 @@ import { CategoryId } from '../types';
 export default function GalleryScreen() {
   const router = useRouter();
   const { cards, isLoading, reloadCards } = useFoodCards();
+  const { stats, level } = useUserStats();
   const [activeFilter, setActiveFilter] = useState<CategoryId | 'todas'>('todas');
 
   useFocusEffect(
@@ -30,6 +32,9 @@ export default function GalleryScreen() {
     });
   };
 
+  const xpForNextLevel = getXpForLevel(level + 1);
+  const progressPercent = Math.min(100, Math.max(0, (stats.xp / xpForNextLevel) * 100));
+
   if (isLoading && cards.length === 0) {
     return (
       <View style={styles.centerContainer}>
@@ -40,6 +45,23 @@ export default function GalleryScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.headerRow}>
+        <Text style={styles.headerTitle}>Tu FoodDex</Text>
+        <TouchableOpacity onPress={() => router.push('/profile')} style={styles.profileBtn}>
+          <MaterialCommunityIcons name="card-account-details-star-outline" size={32} color="#333" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.miniProgressContainer}>
+        <View style={styles.miniProgressHeader}>
+          <Text style={styles.miniProgressLevel}>Nivel {level}</Text>
+          <Text style={styles.miniProgressXp}>{stats.xp} / {xpForNextLevel} XP</Text>
+        </View>
+        <View style={styles.miniProgressBarBg}>
+          <View style={[styles.miniProgressBarFill, { width: `${progressPercent}%` }]} />
+        </View>
+      </View>
+
       {/* Filtros */}
       <View style={styles.filterContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
@@ -120,6 +142,54 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0EAD6',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 8,
+  },
+  headerTitle: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 36,
+    color: '#333',
+    textTransform: 'uppercase',
+  },
+  profileBtn: {
+    padding: 8,
+  },
+  miniProgressContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  miniProgressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  miniProgressLevel: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 18,
+    color: '#FF6347',
+  },
+  miniProgressXp: {
+    fontFamily: 'VT323_400Regular',
+    fontSize: 16,
+    color: '#666',
+  },
+  miniProgressBarBg: {
+    height: 8,
+    backgroundColor: '#eee',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#333',
+    overflow: 'hidden',
+  },
+  miniProgressBarFill: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
   },
   centerContainer: {
     flex: 1,
