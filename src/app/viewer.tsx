@@ -118,13 +118,13 @@ function ViewerItem({ item, editCard, removeCard, goBack }: { item: any, editCar
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
               <MaterialCommunityIcons name="star" size={24} color="#FFD700" />
-              <Text style={styles.statValue}>{item.calificacion}/10</Text>
+              <Text style={styles.statValue}>{item.calificacion > 0 ? `${item.calificacion}/10` : 'S/C'}</Text>
             </View>
             <View style={styles.statBox}>
-              <View style={{flexDirection: 'row'}}>
-                {Array(item.precio).fill(0).map((_, i) => (
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                {item.precio > 0 ? Array(item.precio).fill(0).map((_, i) => (
                   <MaterialCommunityIcons key={i} name="currency-usd" size={20} color="#4CAF50" />
-                ))}
+                )) : <Text style={[styles.statValue, {fontSize: 20, color: '#999', marginLeft: 0}]}>Precio Misterioso</Text>}
               </View>
             </View>
             <View style={styles.statBox}>

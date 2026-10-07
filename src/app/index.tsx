@@ -11,13 +11,14 @@ import { CategoryId } from '../types';
 export default function GalleryScreen() {
   const router = useRouter();
   const { cards, isLoading, reloadCards } = useFoodCards();
-  const { stats, level } = useUserStats();
+  const { stats, level, loadStats } = useUserStats();
   const [activeFilter, setActiveFilter] = useState<CategoryId | 'todas'>('todas');
 
   useFocusEffect(
     useCallback(() => {
       reloadCards();
-    }, [reloadCards])
+      loadStats();
+    }, [reloadCards, loadStats])
   );
 
   const filteredCards = cards.filter(card => 

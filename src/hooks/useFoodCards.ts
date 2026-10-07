@@ -20,23 +20,38 @@ export const useFoodCards = () => {
 
   useEffect(() => {
     loadCards();
+    const subscription = import('react-native').then(({ DeviceEventEmitter }) => {
+      return DeviceEventEmitter.addListener('cards_updated', loadCards);
+    });
+    return () => {
+      subscription.then(sub => sub.remove());
+    };
   }, [loadCards]);
+
+  const emitUpdate = () => {
+    import('react-native').then(({ DeviceEventEmitter }) => {
+      DeviceEventEmitter.emit('cards_updated');
+    });
+  };
 
   const addCard = async (cardData: Omit<FoodCard, 'id'>) => {
     const newCard = await Storage.saveCard(cardData);
     setCards((prevCards) => [newCard, ...prevCards]);
+    emitUpdate();
     return newCard;
   };
 
   const removeCard = async (id: string) => {
     await Storage.deleteCard(id);
     setCards((prevCards) => prevCards.filter((c) => c.id !== id));
+    emitUpdate();
   };
 
   const editCard = async (id: string, updates: Partial<FoodCard>) => {
     const updatedCard = await Storage.updateCard(id, updates);
     if (updatedCard) {
       setCards((prevCards) => prevCards.map((c) => (c.id === id ? updatedCard : c)));
+      emitUpdate();
     }
     return updatedCard;
   };

@@ -76,14 +76,14 @@ export default function FoodCardItem({ card, index, onPress }: Props) {
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>
               <MaterialCommunityIcons name="star" size={12} color="#FFD700" style={styles.starIcon}/>
-              <Text style={styles.statValue}>{card.calificacion}</Text>
+              <Text style={styles.statValue}>{card.calificacion > 0 ? card.calificacion : '?'}</Text>
             </View>
             
             <View style={styles.statRow}>
-              <View style={{flexDirection: 'row'}}>
-                {Array(card.precio).fill(0).map((_, i) => (
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                {card.precio > 0 ? Array(card.precio).fill(0).map((_, i) => (
                   <MaterialCommunityIcons key={i} name="currency-usd" size={10} color="#4CAF50" />
-                ))}
+                )) : <Text style={[styles.statValue, {fontSize: 10, color: '#999'}]}>?</Text>}
               </View>
               <MaterialCommunityIcons 
                 name={card.volveria_a_comer_aqui ? 'heart' : 'heart-broken'} 

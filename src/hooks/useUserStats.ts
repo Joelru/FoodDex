@@ -44,6 +44,12 @@ export function useUserStats() {
 
   useEffect(() => {
     loadStats();
+    const subscription = import('react-native').then(({ DeviceEventEmitter }) => {
+      return DeviceEventEmitter.addListener('stats_updated', loadStats);
+    });
+    return () => {
+      subscription.then(sub => sub.remove());
+    };
   }, [loadStats]);
 
   const addXp = async (amount: number) => {
@@ -55,6 +61,10 @@ export function useUserStats() {
       
       await AsyncStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(newStats));
       setStats(newStats);
+      
+      import('react-native').then(({ DeviceEventEmitter }) => {
+        DeviceEventEmitter.emit('stats_updated');
+      });
       
       const oldLevel = calculateLevel(currentStats.xp);
       const newLevel = calculateLevel(newXp);
@@ -69,6 +79,7 @@ export function useUserStats() {
     stats,
     isLoading,
     addXp,
+    loadStats,
     level: calculateLevel(stats.xp),
     rank: getRankInfo(calculateLevel(stats.xp)),
   };

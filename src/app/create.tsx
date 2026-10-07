@@ -12,7 +12,7 @@ import { CategoryId, Coordinates } from '../types';
 
 export default function CreateCardScreen() {
   const router = useRouter();
-  const { addCard } = useFoodCards();
+  const { addCard, cards } = useFoodCards();
   const { addXp, level } = useUserStats();
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -25,8 +25,8 @@ export default function CreateCardScreen() {
   const [name, setName] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
   const [category, setCategory] = useState<CategoryId>('chatarra');
-  const [rating, setRating] = useState<number>(8); // 1 to 10
-  const [price, setPrice] = useState<number>(2); // 1 to 3
+  const [rating, setRating] = useState<number>(0); // 0 = no rating
+  const [price, setPrice] = useState<number>(0); // 0 = no price
   const [wouldEatAgain, setWouldEatAgain] = useState(true);
   
   const [saveLocation, setSaveLocation] = useState(false); // Default disabled
@@ -127,9 +127,15 @@ export default function CreateCardScreen() {
         coordenadas: saveLocation ? exifCoords : undefined, // Only save if toggle is ON
       });
 
+      // Check for duplicate image to prevent XP farming
+      const isDuplicateImage = cards.some(c => 
+        c.image_uri === imageUri || 
+        (exifDate && c.fecha_captura === exifDate)
+      );
+
       // Calculate XP
       let xpEarned = 50; // base XP
-      if (imageUri) xpEarned += 20;
+      if (imageUri && !isDuplicateImage) xpEarned += 20;
       if (saveLocation && exifCoords) xpEarned += 15;
       if (rating > 0 && price > 0) xpEarned += 15;
 
