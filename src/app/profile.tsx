@@ -1,7 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUserStats, getXpForLevel } from '../hooks/useUserStats';
 import { useFoodCards } from '../hooks/useFoodCards';
 import { CATEGORIES } from '../constants/Categories';
@@ -10,6 +12,38 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { stats, level, rank } = useUserStats();
   const { cards } = useFoodCards();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadProfileImage();
+  }, []);
+
+  const loadProfileImage = async () => {
+    try {
+      const savedImage = await AsyncStorage.getItem('@fooddex_profile_image');
+      if (savedImage) setProfileImage(savedImage);
+    } catch (e) {
+      console.error('Error loading profile image:', e);
+    }
+  };
+
+  const pickProfileImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const uri = result.assets[0].uri;
+        setProfileImage(uri);
+        await AsyncStorage.setItem('@fooddex_profile_image', uri);
+      }
+    } catch (e) {
+      console.error('Error picking profile image:', e);
+    }
+  };
 
   const xpForNextLevel = getXpForLevel(level + 1);
   const progressPercent = Math.min(100, Math.max(0, (stats.xp / xpForNextLevel) * 100));
@@ -71,9 +105,30 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.card}>
-          <View style={styles.rankIconContainer}>
-            <MaterialCommunityIcons name={rank.icon as any} size={80} color="#FF6347" />
-          </View>
+          {/* Bite Mark effect (Top Right Corner - Multiple overlapping dents) */}
+          <View style={styles.biteCoverCorner} />
+
+          <View style={styles.biteBlack1} />
+          <View style={styles.biteBlack2} />
+          <View style={styles.biteBlack3} />
+          
+          <View style={styles.biteBg1} />
+          <View style={styles.biteBg2} />
+          <View style={styles.biteBg3} />
+
+          <View style={styles.biteCoverTop} />
+          <View style={styles.biteCoverRight} />
+
+          <TouchableOpacity style={styles.rankIconContainer} onPress={pickProfileImage} activeOpacity={0.8}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            ) : (
+              <MaterialCommunityIcons name={rank.icon as any} size={80} color="#FF6347" />
+            )}
+            <View style={styles.editIconBadge}>
+              <MaterialCommunityIcons name="camera" size={14} color="#fff" />
+            </View>
+          </TouchableOpacity>
           <Text style={styles.rankTitle}>{rank.title}</Text>
           <Text style={styles.levelText}>Nivel {level}</Text>
           
@@ -201,6 +256,112 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    position: 'relative',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 57,
+  },
+  editIconBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#333',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  biteCoverCorner: {
+    position: 'absolute',
+    right: -3,
+    top: -3,
+    width: 10,
+    height: 10,
+    backgroundColor: '#F0EAD6',
+    zIndex: 12,
+  },
+  biteBlack1: {
+    position: 'absolute',
+    right: 11,
+    top: -21,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#333',
+    zIndex: 10,
+  },
+  biteBlack2: {
+    position: 'absolute',
+    right: -5,
+    top: -5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#333',
+    zIndex: 10,
+  },
+  biteBlack3: {
+    position: 'absolute',
+    right: -21,
+    top: 11,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#333',
+    zIndex: 10,
+  },
+  biteBg1: {
+    position: 'absolute',
+    right: 14,
+    top: -18,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F0EAD6',
+    zIndex: 11,
+  },
+  biteBg2: {
+    position: 'absolute',
+    right: -2,
+    top: -2,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F0EAD6',
+    zIndex: 11,
+  },
+  biteBg3: {
+    position: 'absolute',
+    right: -18,
+    top: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F0EAD6',
+    zIndex: 11,
+  },
+  biteCoverTop: {
+    position: 'absolute',
+    right: -30,
+    top: -30,
+    width: 100,
+    height: 27,
+    backgroundColor: '#F0EAD6',
+    zIndex: 12,
+  },
+  biteCoverRight: {
+    position: 'absolute',
+    right: -30,
+    top: -30,
+    width: 27,
+    height: 100,
+    backgroundColor: '#F0EAD6',
+    zIndex: 12,
   },
   rankTitle: {
     fontFamily: 'VT323_400Regular',
